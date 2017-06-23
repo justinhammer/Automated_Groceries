@@ -53,6 +53,25 @@ def get_categories():
         categories_children_right_side_selector)
     return categories_dict
 
+def sort_scrape_and_click_home():
+    # Sort the page alphabetically since I don't trust relevance to give me everything:
+    sort_by_drop_down = driver.find_element_by_id(sort_by_drop_down_id)
+    sort_by_drop_down.click()
+    sort_by_alphabetical = driver.find_element_by_css_selector(sort_by_alphabetical_selector)
+    sort_by_alphabetical.click()
+
+    # Scrape the product information:
+
+    # Click the next pagination arrow at the bottom of the page:
+    next_page_arrow = driver.find_element_by_id(next_page_arrow_id)
+    next_page_arrow.click()
+
+    # Scrape the product information:
+    # Probably want to put this and the previous step in a loop of some kind.
+
+    # Click the home page link
+    home_link = driver.find_element_by_css_selector(home_link_selector)
+    home_link.click()
 
 
 # Driver setup and opening browser:
@@ -76,56 +95,72 @@ shop_this_store_button.click()
 
 # Get count of departments:
 departments_count = len(get_departments())
+department_counter = 0
+
+# Get count of categories:
+categories = get_categories()
+categories_left_count = len(categories['left categories'])
+categories_right_count = len(categories['right categories'])
+category_left_counter = 0
+category_right_counter = 0
+
 driver.get(website_home)
 
-pdb.set_trace()
-
-i = 0
-while i < departments_count:
-    # Get the department for this iteration:
+while department_counter < departments_count:
+    # Get and click the department for this iteration:
     departments_list_for_iteration = get_departments()
-    departments_list_for_iteration[i].click()
+    departments_list_for_iteration[department_counter].click()
 
-    # Grab each of the categories of a department and store number of categories
-    categories = get_categories()
-    categories_left_count = len(categories['left categories'])
-    categories_right_count = len(categories['right categories'])
+    if category_left_counter < categories_left_count:
+        while category_left_counter < categories_left_count:
+            # Get and click the category for this iteration:
+            category_for_iteration = get_categories()
+            category_for_iteration['left categories'][category_left_counter].click()
+            sort_scrape_and_click_home()
+            category_left_counter += 1 
+    else:
+        while category_right_counter < categories_right_count:
+            #Get and click the category for this iteration:
+            category_for_iteration = get_categories()
+            category_for_iteration['right categories'][category_right_counter].click()
+            sort_scrape_and_click_home()
+            category_right_counter += 1
 
-    i+= 1
+    department_counter += 1
+
+
 # # Click the first department
 # first_department_in_list = wait.until(EC.visibility_of(departments_list[0]))
 # first_department_in_list.click()
 
+# # Grab each of the categories of a department and store number of categories
+# categories_parent_left_side = driver.find_element_by_id(categories_parent_left_side_id)
+# categories_children_left_side_list = categories_parent_left_side.find_elements_by_css_selector(
+#     categories_children_left_side_selector)
+# categories_left_count = categories_children_left_side_list.len()
 
+# categories_parent_right_side = driver.find_element_by_id(categories_parent_right_side_id)
+# categories_children_right_side_list = categories_parent_right_side.find_elements_by_css_selector(
+#     categories_children_right_side_selector)
+# categories_right_count = categories_children_right_side_list.len()
 
-# Grab each of the categories of a department and store number of categories
-categories_parent_left_side = driver.find_element_by_id(categories_parent_left_side_id)
-categories_children_left_side_list = categories_parent_left_side.find_elements_by_css_selector(
-    categories_children_left_side_selector)
-categories_left_count = categories_children_left_side_list.len()
+# # Click the first item on the left side of the categories list
+# first_category_in_list = wait.until(EC.visibility_of(categories_children_left_side_list[0]))    
+# first_category_in_list.click()
 
-categories_parent_right_side = driver.find_element_by_id(categories_parent_right_side_id)
-categories_children_right_side_list = categories_parent_right_side.find_elements_by_css_selector(
-    categories_children_right_side_selector)
-categories_right_count = categories_children_right_side_list.len()
+# # Sort the page alphabetically since I don't trust relevance to give me everything
+# sort_by_drop_down = driver.find_element_by_id(sort_by_drop_down_id)
+# sort_by_drop_down.click()
+# sort_by_alphabetical = driver.find_element_by_css_selector(sort_by_alphabetical_selector)
+# sort_by_alphabetical.click()
 
-# Click the first item on the left side of the categories list
-first_category_in_list = wait.until(EC.visibility_of(categories_children_left_side_list[0]))    
-first_category_in_list.click()
+# # Click the next pagination arrow at the bottom of the page
+# next_page_arrow = driver.find_element_by_id(next_page_arrow_id)
+# next_page_arrow.click()
 
-# Sort the page alphabetically since I don't trust relevance to give me everything
-sort_by_drop_down = driver.find_element_by_id(sort_by_drop_down_id)
-sort_by_drop_down.click()
-sort_by_alphabetical = driver.find_element_by_css_selector(sort_by_alphabetical_selector)
-sort_by_alphabetical.click()
-
-# Click the next pagination arrow at the bottom of the page
-next_page_arrow = driver.find_element_by_id(next_page_arrow_id)
-next_page_arrow.click()
-
-# Click the home page link
-home_link = driver.find_element_by_css_selector(home_link_selector)
-home_link.click()
+# # Click the home page link
+# home_link = driver.find_element_by_css_selector(home_link_selector)
+# home_link.click()
 
 #   -For each of the links:
 #      -When visiting each link:
