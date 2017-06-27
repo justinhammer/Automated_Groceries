@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from decimal import Decimal
 import pdb
 
 import os
@@ -127,22 +128,19 @@ def get_product_information():
     all_products_on_page = driver.find_elements_by_class_name(product_info_class)
     # Create new Product objects in database. Using upc on get_or_create since that value should be unique:
     for product in all_products_on_page:
-        product_name = product.find_element_by_class_name(product_name_class)
-        product_name = product_name.text
-        product_price = product.find_element_by_class_name(product_price_class)
-        product_price = product_price.text
-        product_unit = product.find_element_by_class_name(product_uom_class)
-        product_unit = product_unit.text
-        product_upc = product.find_element_by_css_selector(product_upc_selector)
-        product_upc = product_upc.get_attribute('data-upc')
+        product_name = product.find_element_by_class_name(product_name_class).text
+        product_price = product.find_element_by_class_name(product_price_class).text.strip('$')
 
-        pdb.set_trace()
+        # Current bug here. Issue occurs when product_price is a sale price. Need to handle this case.
+
+        product_price_decimal = Decimal(product_price)
+        product_unit = product.find_element_by_class_name(product_uom_class).text
+        product_upc = product.find_element_by_css_selector(product_upc_selector).get_attribute('data-upc')
         
         # new_product, created = Product.objects.get_or_create(upc=product_upc)
-        # new_product.name = product_name.text
-        # new_product.price = product_price.text
-        # new_product.unit_of_measurement = product_unit.text
-
+        # new_product.name = product_name
+        # new_product.price = product_price_decimal
+        # new_product.unit_of_measurement = product_unit
         # new_product.save()
 
 
