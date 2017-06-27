@@ -1,2 +1,6 @@
-*.pyc
 .DS_Store
+migrations/
+*.pyc
+__pychache__/
+*settings.py
+*.sqlite3

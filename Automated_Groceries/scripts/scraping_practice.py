@@ -15,6 +15,7 @@ login_form_password_id = 'password'
 website = 'https://www.smithsfoodanddrug.com/onlineshopping/signin'
 website_home = "https://www.smithsfoodanddrug.com/storecatalog/clicklistbeta/#/"
 
+add_to_cart_button_selector = '[ng-click="vm.addToCart()"]'
 categories_children_left_side_selector = '#categoryList_column1 > li > a'
 categories_children_right_side_selector = '#categoryList_column2 > li > a'
 categories_parent_left_side_selector = '#categoryList_column1'
@@ -23,6 +24,7 @@ departments_drop_down_selector = '#departmentsButton > ng-transclude > div > spa
 departments_selector = '#departmentsMenu > [ng-repeat="department in vm.departments"] > a'
 home_link_selector = '#widget_breadcrumb > ul > li:nth-child(1) > a'
 next_page_arrow_id = 'WC_SearchBasedNavigationResults_pagination_link_right_categoryResults'
+product_info_class = 'product_info'
 search_bar_selector = '[data-qa="pickup store search input"]'
 search_button_selector = '[data-qa="pickup store submit button"]'
 shop_this_store_button_selector = 'ol > li:nth-child(2) > input'
@@ -93,7 +95,7 @@ def sort_scrape_and_click_home():
 
     while True:
         # Scrape the product information. Maybe put this in its own function?:
-
+        get_product_information()
         # Click the next pagination arrow at the bottom of the page:
         try:
             is_next_page_arrow_clickable = wait.until(EC.element_to_be_clickable((By.ID, next_page_arrow_id)))
@@ -105,6 +107,24 @@ def sort_scrape_and_click_home():
     # Click the home page link
     home_link = driver.find_element_by_css_selector(home_link_selector)
     home_link.click()
+
+
+def get_product_information():
+    # Wait for each product to be loaded on page:
+    are_products_loaded = wait.until(EC.visibility_of_all_elements_located((By.CLASS_NAME, product_info_class)))
+    # Retrieve information for each product:
+    all_products_on_page = driver.find_elements_by_class_name(product_info_class)
+
+    for product in all_products_on_page:
+        product_name = product.find_element_by_css_selector('.product_name')
+        product_price = product.find_element_by_css_selector('.product_price')
+        product_unit = product.find_element_by_css_selector('.product_uom')
+        # print(("Name: {} | Price : {} | Unit: {}").format(product_name.text, product_price.text, product_unit.text))
+
+
+
+
+
 
 
 def fix_category_id(list_of_category_ids):
