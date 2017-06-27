@@ -35,7 +35,7 @@ product_info_class = 'product_info'
 product_name_class = 'product_name'
 product_price_class = 'product_price'
 product_uom_class = 'product_uom'
-product_upc_selector = 'data-upc'
+product_upc_selector = '.product_name > a'
 search_bar_selector = '[data-qa="pickup store search input"]'
 search_button_selector = '[data-qa="pickup store submit button"]'
 shop_this_store_button_selector = 'ol > li:nth-child(2) > input'
@@ -128,14 +128,20 @@ def get_product_information():
     # Create new Product objects in database. Using upc on get_or_create since that value should be unique:
     for product in all_products_on_page:
         product_name = product.find_element_by_class_name(product_name_class)
+        product_name = product_name.text
         product_price = product.find_element_by_class_name(product_price_class)
+        product_price = product_price.text
         product_unit = product.find_element_by_class_name(product_uom_class)
-        product_upc = product_name.get_attribute(product_upc)
+        product_unit = product_unit.text
+        product_upc = product.find_element_by_css_selector(product_upc_selector)
+        product_upc = product_upc.get_attribute('data-upc')
+
+        pdb.set_trace()
         
         # new_product, created = Product.objects.get_or_create(upc=product_upc)
-        # new_product.name = product_name
-        # new_product.price = product_price
-        # new_product.unit_of_measurement = product.unit
+        # new_product.name = product_name.text
+        # new_product.price = product_price.text
+        # new_product.unit_of_measurement = product_unit.text
 
         # new_product.save()
 
