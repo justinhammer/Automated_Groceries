@@ -5,6 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
+from main.models import Product
+
 import pdb
 
 
@@ -118,18 +120,19 @@ def get_product_information():
     are_products_loaded = wait.until(EC.visibility_of_all_elements_located((By.CLASS_NAME, product_info_class)))
     # Retrieve information for each product:
     all_products_on_page = driver.find_elements_by_class_name(product_info_class)
-
+    # Create new Product objects in database. Using upc on get_or_create since that value should be unique:
     for product in all_products_on_page:
         product_name = product.find_element_by_class_name(product_name_class)
         product_price = product.find_element_by_class_name(product_price_class)
         product_unit = product.find_element_by_class_name(product_uom_class)
         product_upc = product_name.get_attribute(product_upc)
-        # print(("Name: {} | Price : {} | Unit: {}").format(product_name.text, product_price.text, product_unit.text))
+        
+        new_product, created = Product.objects.get_or_create(upc=product_upc)
+        new_product.name = product_name
+        new_product.price = product_price
+        new_product.unit_of_measurement = product.unit
 
-
-
-
-
+        new_product.save()
 
 
 def fix_category_id(list_of_category_ids):
