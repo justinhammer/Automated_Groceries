@@ -4,10 +4,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-
-from main.models import Product
-
 import pdb
+
+import os
+import sys
+sys.path.append('..')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Automated_Groceries.settings")
+import django
+django.setup()
+from main.models import Product
 
 
 login_email = credentials.EMAIL_ADDRESS
@@ -28,7 +33,7 @@ home_link_selector = '#widget_breadcrumb > ul > li:nth-child(1) > a'
 next_page_arrow_id = 'WC_SearchBasedNavigationResults_pagination_link_right_categoryResults'
 product_info_class = 'product_info'
 product_name_class = 'product_name'
-product_price_class = 'product_price
+product_price_class = 'product_price'
 product_uom_class = 'product_uom'
 product_upc_selector = 'data-upc'
 search_bar_selector = '[data-qa="pickup store search input"]'
@@ -127,12 +132,12 @@ def get_product_information():
         product_unit = product.find_element_by_class_name(product_uom_class)
         product_upc = product_name.get_attribute(product_upc)
         
-        new_product, created = Product.objects.get_or_create(upc=product_upc)
-        new_product.name = product_name
-        new_product.price = product_price
-        new_product.unit_of_measurement = product.unit
+        # new_product, created = Product.objects.get_or_create(upc=product_upc)
+        # new_product.name = product_name
+        # new_product.price = product_price
+        # new_product.unit_of_measurement = product.unit
 
-        new_product.save()
+        # new_product.save()
 
 
 def fix_category_id(list_of_category_ids):
