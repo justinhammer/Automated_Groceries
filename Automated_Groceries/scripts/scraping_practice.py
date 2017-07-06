@@ -6,9 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from decimal import Decimal
 import pdb
-
+import re
 import os
 import sys
+
 sys.path.append('..')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Automated_Groceries.settings")
 import django
@@ -35,6 +36,7 @@ next_page_arrow_id = 'WC_SearchBasedNavigationResults_pagination_link_right_cate
 product_info_class = 'product_info'
 product_name_class = 'product_name'
 product_price_class = 'product_price'
+product_sale_class = 'offer_price'
 product_uom_class = 'product_uom'
 product_upc_selector = '.product_name > a'
 search_bar_selector = '[data-qa="pickup store search input"]'
@@ -129,10 +131,11 @@ def get_product_information():
     # Create new Product objects in database. Using upc on get_or_create since that value should be unique:
     for product in all_products_on_page:
         product_name = product.find_element_by_class_name(product_name_class).text
-        product_price = product.find_element_by_class_name(product_price_class).text.strip('$')
-
-        # Current bug here. Issue occurs when product_price is a sale price. Need to handle this case.
-
+        # Some items have sale prices. Try for the sale price first:
+        try:
+            product_price = product.find_element_by_class_name(product_sale_class).text.strip('$')
+        except:
+            product_price = product.find_element_by_class_name(product_price_class).text.strip('$')
         product_price_decimal = Decimal(product_price)
         product_unit = product.find_element_by_class_name(product_uom_class).text
         product_upc = product.find_element_by_css_selector(product_upc_selector).get_attribute('data-upc')
