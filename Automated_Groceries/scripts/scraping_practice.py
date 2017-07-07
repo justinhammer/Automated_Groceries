@@ -130,12 +130,15 @@ def get_product_information():
     # Create new Product objects in database. Using upc on get_or_create since that value should be unique:
     for product in all_products_on_page:
         product_name = product.find_element_by_class_name(product_name_class).text
-        product_price = product.find_element_by_class_name(product_price_class).text
-        product_price.split("$")
-
-        pdb.set_trace()
-        
-        #product_price_decimal = Decimal(product_price)
+        product_price_list = product.find_element_by_class_name(product_price_class).text.split("$")
+        # Calling split in the previous line will always create an array of at least 2 items
+        # unless the split is called on an empty string. Empty strings should only ever show
+        # up if the product does not have a price.
+        if len(product_price_list) > 1:
+            product_price = product_price_list[-1]
+        else:
+            product_price = 0
+        product_price_decimal = Decimal(product_price)
         product_unit = product.find_element_by_class_name(product_uom_class).text
         product_upc = product.find_element_by_css_selector(product_upc_selector).get_attribute('data-upc')
         
@@ -159,11 +162,17 @@ def fix_category_id(list_of_category_ids):
 
 # Driver setup and opening browser:
 driver = webdriver.Chrome()
-driver.implicitly_wait(5) #seconds
-wait = WebDriverWait(driver, 5)
+wait = WebDriverWait(driver, 3)
 driver.get(website)
 
 # Logging in to website:
+
+
+# Next step is to go through and put in the appropriate waits. Explicit waits are not good practice
+# and are only going to slow things down. I need to refactor my navigation to have implicit waits
+# based on the elements I am trying to interact with.
+
+
 login_email_field = driver.find_element_by_id(login_form_email_address_id)
 login_email_field.clear()
 login_email_field.send_keys(login_email)
