@@ -47,6 +47,7 @@ sort_by_alphabetical_selector = '[value="name"]'
 
 def get_departments(return_list):
     # Click the departments drop down at the top of the page
+    departments_drop_down_clickable = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, departments_drop_down_selector)))
     departments_drop_down = driver.find_element_by_css_selector(departments_drop_down_selector)
     departments_drop_down.click()
 
@@ -101,6 +102,7 @@ def get_categories(department_id):
 
 def sort_scrape_and_click_home():
     # Sort the page alphabetically since I don't trust relevance to give me everything:
+    sort_by_drop_down_clickable = wait.until(EC.element_to_be_clickable((By.ID, sort_by_drop_down_id)))
     sort_by_drop_down = driver.find_element_by_id(sort_by_drop_down_id)
     sort_by_drop_down.click()
     sort_by_alphabetical = driver.find_element_by_css_selector(sort_by_alphabetical_selector)
@@ -141,12 +143,16 @@ def get_product_information():
         product_price_decimal = Decimal(product_price)
         product_unit = product.find_element_by_class_name(product_uom_class).text
         product_upc = product.find_element_by_css_selector(product_upc_selector).get_attribute('data-upc')
-        
-        # new_product, created = Product.objects.get_or_create(upc=product_upc)
-        # new_product.name = product_name
-        # new_product.price = product_price_decimal
-        # new_product.unit_of_measurement = product_unit
-        # new_product.save()
+        # Save data:
+        #store_product_information(product_upc, product_name, product_price_decimal, product_unit)
+
+
+def store_product_information(upc, name, price, uof):
+    new_product, created = Product.objects.get_or_create(upc=upc)
+    new_product.name = name
+    new_product.price = price
+    new_product.unit_of_measurement = uof
+    new_product.save()
 
 
 def fix_category_id(list_of_category_ids):
@@ -166,13 +172,7 @@ wait = WebDriverWait(driver, 3)
 driver.get(website)
 
 # Logging in to website:
-
-
-# Next step is to go through and put in the appropriate waits. Explicit waits are not good practice
-# and are only going to slow things down. I need to refactor my navigation to have implicit waits
-# based on the elements I am trying to interact with.
-
-
+login_email_field_clickable = wait.until(EC.element_to_be_clickable((By.ID, login_form_email_address_id)))
 login_email_field = driver.find_element_by_id(login_form_email_address_id)
 login_email_field.clear()
 login_email_field.send_keys(login_email)
@@ -182,6 +182,7 @@ login_password_field.send_keys(login_password)
 login_password_field.submit()
 
 # Selecting the right store:
+shop_this_store_button_clickable = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, shop_this_store_button_selector)))
 shop_this_store_button = driver.find_element_by_css_selector(shop_this_store_button_selector)
 shop_this_store_button.click()
 
