@@ -17,13 +17,20 @@ django.setup()
 from main.models import Product
 
 
+# Regex Pattern:
+reg = re.compile("[\d.]")
+
+# Credentials:
 login_email = credentials.EMAIL_ADDRESS
 login_password = credentials.PASSWORD
 login_form_email_address_id = 'emailAddress'
 login_form_password_id = 'password'
+
+# Urls:
 website = 'https://www.smithsfoodanddrug.com/onlineshopping/signin'
 website_home = "https://www.smithsfoodanddrug.com/storecatalog/clicklistbeta/#/"
 
+# Selectors
 add_to_cart_button_selector = '[ng-click="vm.addToCart()"]'
 categories_children_left_side_selector = '#categoryList_column1 > li > a'
 categories_children_right_side_selector = '#categoryList_column2 > li > a'
@@ -137,14 +144,14 @@ def get_product_information():
         # unless the split is called on an empty string. Empty strings should only ever show
         # up if the product does not have a price.
         if len(product_price_list) > 1:
-            product_price = product_price_list[-1]
+            product_price = reg.match(product_price_list[-1]).group()
         else:
             product_price = 0
         product_price_decimal = Decimal(product_price)
         product_unit = product.find_element_by_class_name(product_uom_class).text
         product_upc = product.find_element_by_css_selector(product_upc_selector).get_attribute('data-upc')
         # Save data:
-        #store_product_information(product_upc, product_name, product_price_decimal, product_unit)
+        store_product_information(product_upc, product_name, product_price_decimal, product_unit)
 
 
 def store_product_information(upc, name, price, uof):
