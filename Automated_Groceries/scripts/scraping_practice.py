@@ -39,6 +39,7 @@ categories_parent_right_side_selector = '#categoryList_column2'
 departments_drop_down_selector = '#departmentsButton > ng-transclude > div > span.desktop.label'
 departments_selector = '#departmentsMenu > [ng-repeat="department in vm.departments"] > a'
 home_link_selector = '#widget_breadcrumb > ul > li:nth-child(1) > a'
+instructions_id = "instructions_"
 next_page_arrow_id = 'WC_SearchBasedNavigationResults_pagination_link_right_categoryResults'
 product_info_class = 'product_info'
 product_name_class = 'product_name'
@@ -47,7 +48,12 @@ product_uom_class = 'product_uom'
 product_upc_selector = '.product_name > a'
 search_bar_selector = '[data-qa="pickup store search input"]'
 search_button_selector = '[data-qa="pickup store submit button"]'
-shop_this_store_button_selector = 'ol > li:nth-child(2) > input'
+single_product_name_id = "PageHeading_"
+single_product_price_selector = "cl-product-card-price"
+single_product_right_column_selector = ".right-col > div"
+single_product_sku_class = "sku"
+single_product_uom_id = "uom_price_sizing_display_"
+shop_this_store_button_selector = 'ol > li:nth-child(1) > input'
 sort_by_drop_down_id = "products_sort_by"
 sort_by_alphabetical_selector = '[value="name"]'
 
@@ -107,7 +113,34 @@ def get_categories(department_id):
     return categories_dict
 
 
-def sort_scrape_and_click_home():
+def scrape_and_click_home(multiple_products):
+    if multiple_products == False:
+        # Handle the single item in a category case
+        get_product_information_for_single_product()
+        home_link = driver.find_element_by_class_name(home_link_selector)
+        home_link.click()
+    else:
+        # Multiple products are present on the page:
+        try:
+            is_next_page_arrow_clickable = wait.until(EC.element_to_be_clickable((By.ID, next_page_arrow_id)))
+            # A clickable arrow at this point means we are not on the last pagination page and there are multiple products present:
+            if is_next_page_arrow_clickable:
+                # Scrape the product information:
+                get_product_information_for_multiple_products()
+                next_page_arrow = driver.find_element_by_id(next_page_arrow_id)
+                next_page_arrow.click()
+                multiple_products_again = number_of_products_on_category_page_more_than_one()
+                scrape_and_click_home(multiple_products_again)
+        # A non-clickable arrow at this point means we are on the last pagination page with multiple products present:
+        except:
+            # Scrape the product information:
+            get_product_information_for_multiple_products
+            # Click the home page link:
+            home_link = driver.find_element_by_css_selector(home_link_selector)
+            home_link.click()
+
+
+def sort_page():
     # Sort the page alphabetically since I don't trust relevance to give me everything:
     sort_by_drop_down_clickable = wait.until(EC.element_to_be_clickable((By.ID, sort_by_drop_down_id)))
     sort_by_drop_down = driver.find_element_by_id(sort_by_drop_down_id)
@@ -115,23 +148,8 @@ def sort_scrape_and_click_home():
     sort_by_alphabetical = driver.find_element_by_css_selector(sort_by_alphabetical_selector)
     sort_by_alphabetical.click()
 
-    while True:
-        # Scrape the product information. Maybe put this in its own function?:
-        get_product_information()
-        # Click the next pagination arrow at the bottom of the page:
-        try:
-            is_next_page_arrow_clickable = wait.until(EC.element_to_be_clickable((By.ID, next_page_arrow_id)))
-            next_page_arrow = driver.find_element_by_id(next_page_arrow_id)
-            next_page_arrow.click()
-        except:
-            break
 
-    # Click the home page link
-    home_link = driver.find_element_by_css_selector(home_link_selector)
-    home_link.click()
-
-
-def get_product_information():
+def get_product_information_for_multiple_products():
     # Wait for each product to be loaded on page:
     are_products_loaded = wait.until(EC.visibility_of_all_elements_located((By.CLASS_NAME, product_info_class)))
     # Retrieve information for each product:
@@ -153,6 +171,33 @@ def get_product_information():
         # Save data:
         store_product_information(product_upc, product_name, product_price_decimal, product_unit)
 
+
+def get_product_information_for_single_product():
+    # Ensure the product is loaded on the page:
+    is_product_loaded = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, single_product_right_column_selector)))
+    product_information = driver.find_element_by_css_selector(single_product_right_column_selector)
+    # Retrive unique upc number for product by stripping "SKU:" from text of sku element:
+    product_upc = product_information.find_element_by_class_name(single_product_sku_class).text.strip("SKU:")
+    # Can use upc number to find other needed information:
+    product_name = product_information.find_element_by_id(single_product_name_id + product_upc).text
+    product_unit = product_information.find_element_by_id(single_product_uom_id + product_upc).text
+    product_price_list = product_information.find_element_by_css_selector(single_product_price_selector).text.split("$")
+    # See explanation in get_product_information_for_multiple_products() for what's going on here:
+    if len(product_price_list) > 1:
+        product_price = reg.match(product_price_list[-1]).group()
+    else:
+        product_price = 0
+    product_price_decimal = Decimal(product_price)
+    # Save data:
+    store_product_information(product_upc, product_name, product_price_decimal, product_unit)
+
+
+def number_of_products_on_category_page_more_than_one():
+    try:
+        single_product_on_category_page = wait.until(EC.visibility_of_element_located((By.ID, instructions_id)))
+        return False
+    except:
+        return True
 
 def store_product_information(upc, name, price, uof):
     new_product, created = Product.objects.get_or_create(upc=upc)
@@ -196,7 +241,7 @@ shop_this_store_button.click()
 # Get count of departments:
 departments = get_departments(True)
 departments_count = len(departments)
-department_counter = 0
+department_counter = 2
 
 # Navigation loop:
 while department_counter < departments_count:
@@ -219,12 +264,19 @@ while department_counter < departments_count:
         # Get and click the category for this iteration:
         categories = get_categories(departments_ids[department_counter])
         categories['left ids'] = fix_category_id(categories['left ids'])
-        categories['right ids'] = fix_category_id(categories['right ids'])
 
         is_category_to_click_clickable = wait.until(EC.element_to_be_clickable((By.ID, categories['left ids'][category_left_counter])))
         category_to_click = driver.find_element_by_id(categories['left ids'][category_left_counter])
         category_to_click.click()
-        sort_scrape_and_click_home()
+
+        # Need some sort of way to determine how many products are present on the page
+        # If there is only one product, we shouldn't call sort_page()
+        multiple_products = number_of_products_on_category_page_more_than_one()
+        if multiple_products:
+            sort_page()
+            scrape_and_click_home(multiple_products)
+        else:
+            scrape_and_click_home(multiple_products)
         # Click the departments drop down at the top of the page
         departments_drop_down = driver.find_element_by_css_selector(departments_drop_down_selector)
         departments_drop_down.click()
@@ -233,10 +285,20 @@ while department_counter < departments_count:
     while category_right_counter < categories_right_count:
         #Get and click the category for this iteration:
         categories = get_categories(departments_ids[department_counter])
+        categories['right ids'] = fix_category_id(categories['right ids'])
+        
         is_category_to_click_clickable = wait.until(EC.element_to_be_clickable((By.ID, categories['right ids'][category_right_counter])))
         category_to_click = driver.find_element_by_id(categories['right ids'][category_right_counter])
         category_to_click.click()
-        sort_scrape_and_click_home()
+
+        # Need some sort of way to determine how many products are present on the page
+        # If there is only one product, we shouldn't call sort_page()
+        multiple_products = number_of_products_on_category_page_more_than_one()
+        if multiple_products:
+            sort_page()
+            scrape_and_click_home(multiple_products)
+        else:
+            scrape_and_click_home(multiple_products)
         # Click the departments drop down at the top of the page
         departments_drop_down = driver.find_element_by_css_selector(departments_drop_down_selector)
         departments_drop_down.click()
