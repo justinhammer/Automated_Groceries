@@ -241,7 +241,7 @@ shop_this_store_button.click()
 # Get count of departments:
 departments = get_departments(True)
 departments_count = len(departments)
-department_counter = 2
+department_counter = 0
 
 # Navigation loop:
 while department_counter < departments_count:
@@ -269,10 +269,9 @@ while department_counter < departments_count:
         category_to_click = driver.find_element_by_id(categories['left ids'][category_left_counter])
         category_to_click.click()
 
-        # Need some sort of way to determine how many products are present on the page
-        # If there is only one product, we shouldn't call sort_page()
         multiple_products = number_of_products_on_category_page_more_than_one()
         if multiple_products:
+            # If there is only one product, we shouldn't call sort_page()
             sort_page()
             scrape_and_click_home(multiple_products)
         else:
@@ -283,7 +282,7 @@ while department_counter < departments_count:
         category_left_counter += 1 
     
     while category_right_counter < categories_right_count:
-        #Get and click the category for this iteration:
+        # Get and click the category for this iteration:
         categories = get_categories(departments_ids[department_counter])
         categories['right ids'] = fix_category_id(categories['right ids'])
         
@@ -291,10 +290,9 @@ while department_counter < departments_count:
         category_to_click = driver.find_element_by_id(categories['right ids'][category_right_counter])
         category_to_click.click()
 
-        # Need some sort of way to determine how many products are present on the page
-        # If there is only one product, we shouldn't call sort_page()
         multiple_products = number_of_products_on_category_page_more_than_one()
         if multiple_products:
+            # If there is only one product, we shouldn't call sort_page()
             sort_page()
             scrape_and_click_home(multiple_products)
         else:
