@@ -18,7 +18,7 @@ from main.models import Product
 
 
 # Regex Pattern:
-reg = re.compile("[\d.]")
+reg = re.compile("\d.+")
 
 # Credentials:
 login_email = credentials.EMAIL_ADDRESS
@@ -50,7 +50,7 @@ search_bar_selector = '[data-qa="pickup store search input"]'
 search_button_selector = '[data-qa="pickup store submit button"]'
 single_product_name_id = "PageHeading_"
 single_product_price_selector = "cl-product-card-price"
-single_product_right_column_selector = ".right-col > div"
+single_product_right_column_selector = "#content > ui-view > cl-product-details > div > div > div.right-col > cl-product-details-info > div.slot5"
 single_product_sku_class = "sku"
 single_product_uom_id = "uom_price_sizing_display_"
 shop_this_store_button_selector = 'ol > li:nth-child(1) > input'
@@ -117,8 +117,7 @@ def scrape_and_click_home(multiple_products):
     if multiple_products == False:
         # Handle the single item in a category case
         get_product_information_for_single_product()
-        home_link = driver.find_element_by_class_name(home_link_selector)
-        home_link.click()
+        driver.get(website_home)
     else:
         # Multiple products are present on the page:
         try:
@@ -174,6 +173,7 @@ def get_product_information_for_multiple_products():
 
 def get_product_information_for_single_product():
     # Ensure the product is loaded on the page:
+    pdb.set_trace()
     is_product_loaded = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, single_product_right_column_selector)))
     product_information = driver.find_element_by_css_selector(single_product_right_column_selector)
     # Retrive unique upc number for product by stripping "SKU:" from text of sku element:
