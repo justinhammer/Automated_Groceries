@@ -36,6 +36,7 @@ categories_children_left_side_selector = '#categoryList_column1 > li > a'
 categories_children_right_side_selector = '#categoryList_column2 > li > a'
 categories_parent_left_side_selector = '#categoryList_column1'
 categories_parent_right_side_selector = '#categoryList_column2'
+delivery_popup_close_button_selector = 'body > dialog > div'
 departments_drop_down_selector = '#departmentsButton > ng-transclude > div > span.desktop.label'
 departments_selector = '#departmentsMenu > [ng-repeat="department in vm.departments"] > a'
 home_link_selector = '#widget_breadcrumb > ul > li:nth-child(1) > a'
@@ -238,6 +239,11 @@ shop_this_store_button_clickable = wait.until(EC.element_to_be_clickable((By.CSS
 shop_this_store_button = driver.find_element_by_css_selector(shop_this_store_button_selector)
 shop_this_store_button.click()
 
+# Close delivery popup:
+delivery_popup_close_button_clickable = wait.until(EC.element_to_be_clickable(By.CSS_SELECTOR, delivery_popup_close_button_selector)))
+delivery_popup_close_button = driver.find_element_by_css_selector(delivery_popup_close_button_selector)
+delivery_popup_close_button.click()
+
 # Get count of departments:
 departments = get_departments(True)
 departments_count = len(departments)
@@ -270,7 +276,7 @@ while department_counter < departments_count:
         category_to_click.click()
 
         multiple_products = number_of_products_on_category_page_more_than_one()
-        if multiple_products:
+        if multiple_products == True:
             # If there is only one product, we shouldn't call sort_page()
             sort_page()
             scrape_and_click_home(multiple_products)
@@ -291,7 +297,7 @@ while department_counter < departments_count:
         category_to_click.click()
 
         multiple_products = number_of_products_on_category_page_more_than_one()
-        if multiple_products:
+        if multiple_products == True:
             # If there is only one product, we shouldn't call sort_page()
             sort_page()
             scrape_and_click_home(multiple_products)
