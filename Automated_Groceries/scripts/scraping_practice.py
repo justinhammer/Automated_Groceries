@@ -174,7 +174,6 @@ def get_product_information_for_multiple_products():
 
 def get_product_information_for_single_product():
     # Ensure the product is loaded on the page:
-    pdb.set_trace()
     is_product_loaded = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, single_product_right_column_selector)))
     product_information = driver.find_element_by_css_selector(single_product_right_column_selector)
     # Retrive unique upc number for product by stripping "SKU:" from text of sku element:
