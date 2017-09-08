@@ -239,7 +239,7 @@ shop_this_store_button = driver.find_element_by_css_selector(shop_this_store_but
 shop_this_store_button.click()
 
 # Close delivery popup:
-delivery_popup_close_button_clickable = wait.until(EC.element_to_be_clickable(By.CSS_SELECTOR, delivery_popup_close_button_selector)))
+delivery_popup_close_button_clickable = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, delivery_popup_close_button_selector)))
 delivery_popup_close_button = driver.find_element_by_css_selector(delivery_popup_close_button_selector)
 delivery_popup_close_button.click()
 
